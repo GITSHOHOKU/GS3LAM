@@ -1,0 +1,96 @@
+import glob
+import os
+from typing import Optional
+
+import numpy as np
+import torch
+from natsort import natsorted
+
+from  src.datasets.basedataset import GradSLAMDataset
+
+class InspectionDataSet(GradSLAMDataset):
+    def __init__(
+        self,
+        config_dict,
+        basedir,
+        sequence,
+        use_train_split: Optional[bool] = True,
+        stride: Optional[int] = None,
+        start: Optional[int] = 0,
+        end: Optional[int] = -1,
+        desired_height: Optional[int] = 480,
+        desired_width: Optional[int] = 640,
+        load_embeddings: Optional[bool] = False,
+        embedding_dir: Optional[str] = "embeddings",
+        embedding_dim: Optional[int] = 512,
+        **kwargs,
+    ):
+        self.use_train_split = use_train_split
+        if self.use_train_split:
+            self.input_folder = os.path.join(basedir, sequence, "imap/00")
+            self.pose_path = os.path.join(self.input_folder, "traj_w_c.txt")
+        else:
+            self.train_input_folder = os.path.join(basedir, sequence, "imap/00")
+            self.train_pose_path = os.path.join(self.train_input_folder, "traj_w_c.txt")
+            self.input_folder = os.path.join(basedir, sequence, "imap/01")
+            self.pose_path = os.path.join(self.input_folder, "traj_w_c.txt")
+        super().__init__(
+            config_dict,
+            stride=stride,
+            start=start,
+            end=end,
+            desired_height=desired_height,
+            desired_width=desired_width,
+            load_embeddings=load_embeddings,
+            embedding_dir=embedding_dir,
+            embedding_dim=embedding_dim,
+            **kwargs,
+        )
+
+    def get_filepaths(self):
+        if self.use_train_split:
+            color_paths = natsorted(glob.glob(f"{self.input_folder}/rgb/*.png"))
+            object_paths = natsorted(glob.glob(f"{self.input_folder}/nerf_gen_gt/*_GT.png"))
+            depth_paths = natsorted(glob.glob(f"{self.input_folder}/depth/*.png"))
+        else:
+            first_train_color_path = f"{self.train_input_folder}/rgb/rgb_0.png"
+            first_train_depth_path = f"{self.train_input_folder}/depth/depth_0.png"
+            first_train_object_path = f"{self.train_input_folder}/semantic_class/semantic_class_0.png"
+            color_paths = [first_train_color_path] + natsorted(glob.glob(f"{self.input_folder}/rgb/rgb_*.png"))
+            depth_paths = [first_train_depth_path] + natsorted(glob.glob(f"{self.input_folder}/depth/depth_*.png"))
+            object_paths = [first_train_object_path] + natsorted(
+                glob.glob(f"{self.input_folder}/semantic_class/semantic_class_*.png"))
+        embedding_paths = None
+        if self.load_embeddings:
+            embedding_paths = natsorted(glob.glob(f"{self.input_folder}/{self.embedding_dir}/*.pt"))
+        return color_paths, depth_paths, object_paths, embedding_paths
+
+    def load_poses(self):
+        poses = []
+        end_row = np.array([0,0,0,1], dtype='float')
+        if not self.use_train_split:
+            with open(self.train_pose_path, "r") as f:
+                train_lines = f.readlines()
+            first_train_frame_line = train_lines[0]
+            first_train_frame_c2w = np.array(list(map(float, first_train_frame_line.split()))).reshape(4, 4)
+            first_train_frame_c2w = torch.from_numpy(first_train_frame_c2w).float()
+            poses.append(first_train_frame_c2w)
+        with open(self.pose_path, "r") as f:
+            lines = f.readlines()
+        if self.use_train_split:
+            num_poses = self.num_imgs
+        else:
+            num_poses = self.num_imgs - 1
+        for i in range(num_poses):
+            line = lines[i]
+            c2w = np.array(list(map(float, line.split()))).reshape(3, 4)
+            homo_c2w = np.row_stack((c2w, end_row))
+            # c2w[:3, 1] *= -1
+            # c2w[:3, 2] *= -1
+            homo_c2w = torch.from_numpy(homo_c2w).float()
+            poses.append(homo_c2w)
+        return poses
+
+    def read_embedding_from_file(self, embedding_file_path):
+        embedding = torch.load(embedding_file_path)
+        return embedding.permute(0, 2, 3, 1)  # (1, H, W, embedding_dim)

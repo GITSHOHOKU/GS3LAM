@@ -2,20 +2,20 @@ from datetime import datetime
 
 primary_device="cuda:0"
 seed = 1
-scene_name = "office0"
+scene_name = "inspection0"
 
 basedir = "./data/Replica"
 
 first_frame_mapping_iters = 1000
-tracking_iters = 30 #40
-mapping_iters = 50 #60
+tracking_iters = 40
+mapping_iters = 60
 opt_rskm_interval = 5
 densify_thres=0.1 # For adding new Gaussians
-end_frame = 1000 #-1
+end_frame = -1
 
 use_semantic_for_mapping=True
 map_every = 1
-keyframe_every = 5
+keyframe_every = 10
 mapping_window_size = 24
 
 group_name = "Replica"
@@ -38,15 +38,15 @@ config = dict(
     report_iter_progress=False,
     load_checkpoint=False,
     checkpoint_time_idx=0,
-    save_checkpoints=True,
-    checkpoint_interval=200,
+    save_checkpoints=False,
+    checkpoint_interval=100,
     data=dict(
         basedir=basedir,
-        gradslam_data_cfg="./configs/camera/replica.yaml",
+        gradslam_data_cfg="./configs/camera/inspection.yaml",
         sequence=scene_name,
         use_train_split=True,
-        desired_image_height=680,
-        desired_image_width=1200,
+        desired_image_height=480,
+        desired_image_width=848,
         start=0,
         end=end_frame,
         stride=1,
@@ -57,7 +57,7 @@ config = dict(
         use_pretrain=False,
         pretrain_path="./pretrain",
         num_objects=16, # in_channels
-        num_classes=256, # out_channels
+        num_classes=7, # out_channels
         inter_dims=[], #[64, 128],
         use_obj_3d_loss=False,
         use_3d_obj_for_tracking=False,
@@ -70,7 +70,7 @@ config = dict(
         loss_obj_3d_weight=1_000.0,
     ),
     tracking=dict(
-        use_gt_poses=False, # Use GT Poses for Tracking
+        use_gt_poses=True, # Use GT Poses for Tracking
         use_semantic_for_tracking=True,
         use_obj2d_for_tracking=False,
         use_obj3d_for_tracking=False,

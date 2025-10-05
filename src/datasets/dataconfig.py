@@ -4,10 +4,13 @@ import yaml
 from src.datasets.replica import ReplicaSemanticDataset
 from src.datasets.tum import TUMSemanticDataset
 from src.datasets.scannet import ScannetSemanticDataset
+from src.datasets.inspection import InspectionDataSet
 
 def get_dataset(config_dict, basedir, sequence, **kwargs):
     if config_dict["dataset_name"].lower() in ["replica"]:
         return ReplicaSemanticDataset(config_dict, basedir, sequence, **kwargs)
+    if config_dict["dataset_name"].lower() in ["inspection"]:
+        return InspectionDataSet(config_dict, basedir, sequence, **kwargs)
     elif config_dict["dataset_name"].lower() in ["scannet"]:
         return ScannetSemanticDataset(config_dict, basedir, sequence, **kwargs)
     elif config_dict["dataset_name"].lower() in ["tum"]:

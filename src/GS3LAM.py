@@ -465,15 +465,15 @@ def run_gs3lam(config: dict):
     keys = np.array(list(frame_freps.keys()))
     values = np.array(list(frame_freps.values()))
     np.savez(os.path.join(eval_dir, "keyframe_freq_keys.npz"), keys=keys, values=values)
-    
+
     # Evaluate Final Parameters
     with torch.no_grad():
         eval(dataset, params, num_frames, eval_dir,
-                mapping_iters=config['mapping']['num_iters'], 
-                add_new_gaussians=config['mapping']['add_new_gaussians'],
-                eval_every=config['eval_every'],
-                use_semantic=config["use_semantic"],
-                classifier=semantic_decoder if config["use_semantic"] else None)
+             mapping_iters=config['mapping']['num_iters'],
+             add_new_gaussians=config['mapping']['add_new_gaussians'],
+             eval_every=config['eval_every'],
+             use_semantic=config["use_semantic"],
+             classifier=semantic_decoder if config["use_semantic"] else None)
 
     # Add Camera Parameters to Save them
     params['timestep'] = variables['timestep']

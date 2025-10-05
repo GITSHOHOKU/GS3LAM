@@ -6,5 +6,5 @@ camera_params:
   fy: 600.0
   cx: 599.5
   cy: 339.5
-  png_depth_scale: 6553.5  # 1000 for Replica provided by vMAP
+  png_depth_scale: 1000 #6553.5  # 1000 for Replica provided by vMAP
   crop_edge: 0

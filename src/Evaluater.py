@@ -4,6 +4,10 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 import numpy as np
+
+import matplotlib
+matplotlib.use('Agg')  # 使用Agg后端
+
 import matplotlib.pyplot as plt
 import colorsys
 from sklearn.decomposition import PCA
