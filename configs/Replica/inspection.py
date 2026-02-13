@@ -6,16 +6,16 @@ scene_name = "inspection0"
 
 basedir = "./data/Replica"
 
-first_frame_mapping_iters = 1000
+first_frame_mapping_iters = 2000
 tracking_iters = 40
-mapping_iters = 60
-opt_rskm_interval = 5
+mapping_iters = 1000
+opt_rskm_interval = 20
 densify_thres=0.1 # For adding new Gaussians
-end_frame = -1
+end_frame = 1000 #-1
 
 use_semantic_for_mapping=True
-map_every = 1
-keyframe_every = 10
+map_every = 10
+keyframe_every = 20
 mapping_window_size = 24
 
 group_name = "Replica"
@@ -30,16 +30,16 @@ config = dict(
     keyframe_every=keyframe_every, # Keyframe every nth frame
     mapping_window_size=mapping_window_size, # Mapping window size
     report_global_progress_every=100, # Report Global Progress every nth frame
-    eval_every=5, # Evaluate every nth frame (at end of SLAM)
-    scene_radius_depth_ratio=3, # (Meters) Max First Frame Depth to Scene Radius Ratio (For Pruning/Densification)
+    eval_every=1, # Evaluate every nth frame (at end of SLAM)
+    scene_radius_depth_ratio=2, # (Meters) Max First Frame Depth to Scene Radius Ratio (For Pruning/Densification)
     mean_sq_dist_method="projective", # Mean Squared Distance Calculation for Scale of Gaussians
-    gaussian_distribution="isotropic", # ["isotropic", "anisotropic"] (Isotropic -> Spherical Covariance, Anisotropic -> Ellipsoidal Covariance)
+    gaussian_distribution="anisotropic", # ["isotropic", "anisotropic"] (Isotropic -> Spherical Covariance, Anisotropic -> Ellipsoidal Covariance)
     densify_method="alpha", # ['depth_sil', 'alpha']
     report_iter_progress=False,
     load_checkpoint=False,
     checkpoint_time_idx=0,
-    save_checkpoints=False,
-    checkpoint_interval=100,
+    save_checkpoints=True,
+    checkpoint_interval=200,
     data=dict(
         basedir=basedir,
         gradslam_data_cfg="./configs/camera/inspection.yaml",
@@ -88,7 +88,7 @@ config = dict(
         loss_weights=dict(
             im=0.5,
             depth=1.0,
-            obj=0.001,
+            obj=0.01,
             big_gaussian_reg=0.05,
             small_gaussian_reg=0.005,
             rel_rgb=0.10,
@@ -123,9 +123,9 @@ config = dict(
         use_uncertainty_for_loss=False,
         use_chamfer=False,
         loss_weights=dict(
-            im=0.5,
+            im=0.6,
             depth=1.0,
-            obj=0.01,
+            obj=0.1,
             big_gaussian_reg=0.01,
             small_gaussian_reg=0.001,
         ),
@@ -141,9 +141,9 @@ config = dict(
         ),
         prune_gaussians=True, # Prune Gaussians during Mapping
         pruning_dict=dict( # Needs to be updated based on the number of mapping iterations
-            start_after=0,
-            remove_big_after=0,
-            stop_after=20,
+            start_after=500,
+            remove_big_after=500,
+            stop_after=1000,
             prune_every=20,
             removal_opacity_threshold=0.005,
             final_removal_opacity_threshold=0.005,
@@ -168,7 +168,7 @@ config = dict(
         offset_first_viz_cam=True, # Offsets the view camera back by 0.5 units along the view direction (For Final Recon Viz)
         show_sil=False, # Show Silhouette instead of RGB
         visualize_cams=True, # Visualize Camera Frustums and Trajectory
-        viz_w=600, viz_h=340,
+        viz_w=848, viz_h=480,
         viz_near=0.01, viz_far=100.0,
         view_scale=2,
         viz_fps=5, # FPS for Online Recon Viz

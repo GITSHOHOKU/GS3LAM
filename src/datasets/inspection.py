@@ -85,10 +85,15 @@ class InspectionDataSet(GradSLAMDataset):
             line = lines[i]
             c2w = np.array(list(map(float, line.split()))).reshape(3, 4)
             homo_c2w = np.row_stack((c2w, end_row))
-            # c2w[:3, 1] *= -1
-            # c2w[:3, 2] *= -1
-            homo_c2w = torch.from_numpy(homo_c2w).float()
-            poses.append(homo_c2w)
+            homo_c2w_t = torch.from_numpy(homo_c2w).float()
+            poses.append(homo_c2w_t)
+            #
+            # line = lines[i]
+            # w2c = np.array(list(map(float, line.split()))).reshape(3, 4)
+            # homo_c2w = np.linalg.inv(np.row_stack((w2c, end_row)))
+            # homo_c2w_t = torch.from_numpy(homo_c2w).float()
+            # poses.append(homo_c2w_t)
+
         return poses
 
     def read_embedding_from_file(self, embedding_file_path):

@@ -50,6 +50,11 @@ def run_gs3lam(config: dict):
         dataset_config["use_train_split"] = True
 
     # Poses are relative to the first frame
+    # if "relative_pose" in dataset_config and  not dataset_config["relative_pose"]:
+    #     related_pose = False
+    # else:
+    #     related_pose = True
+
     dataset = get_dataset(
         config_dict=gradslam_data_cfg,
         basedir=dataset_config["basedir"],
@@ -112,7 +117,13 @@ def run_gs3lam(config: dict):
         
 
         # Process poses
+        # if not related_pose:
+        #     print("***************************inspection dataset without ref first frame coordinates**************** /n")
+        #     gt_w2c = gt_pose
+        # else:
         gt_w2c = torch.linalg.inv(gt_pose)
+
+
         # Process RGB-D Data
         color = color.permute(2, 0, 1) / 255 # BGR->RGB
         depth = depth.permute(2, 0, 1)
@@ -450,13 +461,15 @@ def run_gs3lam(config: dict):
     print(f"Average Tracking/Frame Time: {tracking_frame_time_avg} s")
     print(f"Average Mapping/Iteration Time: {mapping_iter_time_avg*1000} ms")
     print(f"Average Mapping/Frame Time: {mapping_frame_time_avg} s")
-    print("Tracking FPS: {:.5f}".format(sum(t_fps_list) / len(t_fps_list)))
+    if len(t_fps_list) > 0:
+        print("Tracking FPS: {:.5f}".format(sum(t_fps_list) / len(t_fps_list)))
     print("Mapping FPS: {:.5f}".format(sum(m_fps_list) / len(m_fps_list)))
 
     # save result
     running_times = []
-    running_times.append(f"Average Tracking/Iteration Time: {tracking_iter_time_avg*1000} ms")
-    running_times.append(f"Average Tracking/Frame Time: {tracking_frame_time_avg} s")
+    if len(t_fps_list) > 0:
+        running_times.append(f"Average Tracking/Iteration Time: {tracking_iter_time_avg*1000} ms")
+        running_times.append(f"Average Tracking/Frame Time: {tracking_frame_time_avg} s")
     running_times.append(f"Average Mapping/Iteration Time: {mapping_iter_time_avg*1000} ms")
     running_times.append(f"Average Mapping/Frame Time: {mapping_frame_time_avg} s")
     running_times = np.array(running_times, dtype='str')

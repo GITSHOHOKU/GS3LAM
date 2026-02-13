@@ -98,7 +98,9 @@ def export_tsdf_mesh(cfg):
     classifier_path = os.path.join(cfg["logdir"], "classifier.pth")
     
     # Load semantic decoder
-    semantic_decoder = SemanticDecoder(16, 256)
+
+    #s emantic_decoder = SemanticDecoder(16, 256)
+    semantic_decoder = SemanticDecoder(16, 7)
     semantic_decoder.load_state_dict(torch.load(classifier_path))
             
     # Load Scene Data
